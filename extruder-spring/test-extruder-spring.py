@@ -14,8 +14,11 @@
 import math
 
 # Ratio of e-steps to x/y steps, and extruder Z height.
-EXTRUSIONMULT=(.375**2)/(1.75**2)
+FILAMENTWIDTH=1.75
+NOZZLEWIDTH=0.35
 EXTRUDEZ=0.3
+EXTRAZ=0.0
+EXTRUSIONMULT=(EXTRUDEZ * NOZZLEWIDTH) / (math.pi * (FILAMENTWIDTH/2)**2)
 # Size of bed (used to center print after homing printer.
 BEDX=200
 BEDY=250
@@ -38,9 +41,9 @@ STARTDWELL=500
 
 STARTG="""
 ; This is a calibration print for testing extruder springiness.
+G21
 G90
-G28
-G92 X0 Y0 Z0 E0
+G92 E0
 """
 
 ENDG="""
@@ -79,7 +82,7 @@ def reposition(coord, x, y):
     setspeed(REPOSITIONSPEED)
     moveabs(coord, x, y)
     setspeed(REPOSITIONZSPEED)
-    print "G1 Z%f" % (EXTRUDEZ,)
+    print "G1 Z%f" % (EXTRUDEZ+EXTRAZ,)
     print "G4 P%d" % (STARTDWELL,)
 
 def main():
