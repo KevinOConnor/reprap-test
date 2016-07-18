@@ -34,7 +34,7 @@ RULERSPEED=10.
 # Speed and details of non-extrusion head movements
 REPOSITIONSPEED=40.
 REPOSITIONZSPEED=10.
-REPOSITIONZ=1.3
+REPOSITIONZ=1.0
 
 STARTG="""
 ; This is a calibration print for testing extruder springiness.
@@ -77,7 +77,7 @@ def moverel(coord, x, y, ext=None):
 
 def reposition(coord, x, y):
     setspeed(REPOSITIONZSPEED)
-    output("G1 Z%f" % (REPOSITIONZ,))
+    output("G1 Z%f" % (EXTRUDEZ+EXTRAZ+REPOSITIONZ,))
     setspeed(REPOSITIONSPEED)
     moveabs(coord, x, y)
     setspeed(REPOSITIONZSPEED)
