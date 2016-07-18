@@ -28,9 +28,9 @@ TESTLENGTH=20
 TESTTRY=3
 
 # Details of "ruler" markings at top and bottom.
-LANEWIDTH=5
-RULERWIDTH=5
+LANEWIDTH=5.
 RULERSPEED=10.
+SEMICIRCLEPOINTS=10
 # Speed and details of non-extrusion head movements
 REPOSITIONSPEED=40.
 REPOSITIONZSPEED=10.
@@ -75,6 +75,16 @@ def moverel(coord, x, y, ext=None):
         ext = coord.currentE + math.sqrt(x*x+y*y)*EXTRUSIONMULT
     moveabs(coord, coord.currentX + x, coord.currentY + y, ext)
 
+def semicircle(coord, x, y, ext=None):
+    startx, starty = coord.currentX, coord.currentY
+    rads = math.pi / (SEMICIRCLEPOINTS+1)
+    for i in range(SEMICIRCLEPOINTS):
+        pos = rads * (i+1)
+        xpos, ypos = math.sin(pos) * x, math.cos(pos) * -y/2. + y/2.
+        moverel(coord, startx+xpos-coord.currentX, starty+ypos-coord.currentY
+                , ext)
+    moverel(coord, startx-coord.currentX, starty+y-coord.currentY, ext)
+
 def reposition(coord, x, y):
     setspeed(REPOSITIONZSPEED)
     output("G1 Z%f" % (EXTRUDEZ+EXTRAZ+REPOSITIONZ,))
@@ -85,48 +95,70 @@ def reposition(coord, x, y):
 
 def main():
     numlanes = len(TESTSPEEDS)
-    totaly = (numlanes * 2 + 1) * LANEWIDTH + 3 * RULERWIDTH
-    totalx = TESTLENGTH * (TESTTRY*2 + 1)
+    totaly = (numlanes * 2 + 1 + 3) * LANEWIDTH
+    totalx = TESTLENGTH * (TESTTRY*2 + 1) + 4 * LANEWIDTH
     coord = ToolPos()
     coord.baseX = (BEDX-totalx)/2.
     coord.baseY = (BEDY-totaly)/2.
-    teststartx = totalx/2
-    testendx = -teststartx
 
     output(STARTG)
     output("; Prime extruder")
-    reposition(coord, totalx, totaly)
+    reposition(coord, 0, 0)
     setspeed(RULERSPEED)
-    moverel(coord, -totalx, 0, ext=1)
+    moverel(coord, totalx-LANEWIDTH, 0, ext=1)
+
+    semicircle(coord, LANEWIDTH, 2*LANEWIDTH, ext=1)
+    moverel(coord, -LANEWIDTH, 0, ext=1)
 
     output("; Start ruler")
-    rulery = totaly-RULERWIDTH*2
-    for i in range(TESTTRY*2):
-        reposition(coord, (i+1)*TESTLENGTH, rulery)
-        setspeed(RULERSPEED)
-        moverel(coord, 0, RULERWIDTH, ext=1)
+    for i in range(TESTTRY):
+        moverel(coord, 0, -LANEWIDTH, ext=1)
+        moverel(coord, -TESTLENGTH, 0, ext=1)
+        moverel(coord, 0, LANEWIDTH, ext=1)
+        moverel(coord, -TESTLENGTH, 0, ext=1)
+    moverel(coord, 0, -LANEWIDTH, ext=1)
+    moverel(coord, -TESTLENGTH, 0, ext=1)
+    moverel(coord, 0, LANEWIDTH, ext=1)
+    moverel(coord, -LANEWIDTH, 0, ext=1)
+
+    semicircle(coord, -LANEWIDTH/2.0, LANEWIDTH, ext=1)
+    moverel(coord, LANEWIDTH, 0, ext=1)
 
     for i in range(numlanes):
         output("; Start run %d" % (i,))
-        reposition(coord, totalx, rulery-(i*2+1)*LANEWIDTH)
-        setspeed(TESTSPEEDS[i])
-        for j in range(TESTTRY):
-            moverel(coord, -TESTLENGTH, 0)
-            moverel(coord, -TESTLENGTH, 0, ext=1)
-        moverel(coord, -TESTLENGTH, 0)
-        reposition(coord, 0, rulery-(i*2+2)*LANEWIDTH)
         setspeed(TESTSPEEDS[i])
         for j in range(TESTTRY):
             moverel(coord, TESTLENGTH, 0)
             moverel(coord, TESTLENGTH, 0, ext=1)
         moverel(coord, TESTLENGTH, 0)
 
-    output("; Start ruler")
-    rulery = RULERWIDTH
-    for i in range(TESTTRY*2):
-        reposition(coord, totalx-(i+1)*TESTLENGTH, rulery)
         setspeed(RULERSPEED)
-        moverel(coord, 0, -RULERWIDTH, ext=1)
+        moverel(coord, LANEWIDTH, 0, ext=1)
+        semicircle(coord, LANEWIDTH/2.0, LANEWIDTH, ext=1)
+        moverel(coord, -LANEWIDTH, 0, ext=1)
+
+        setspeed(TESTSPEEDS[i])
+        for j in range(TESTTRY):
+            moverel(coord, -TESTLENGTH, 0)
+            moverel(coord, -TESTLENGTH, 0, ext=1)
+        moverel(coord, -TESTLENGTH, 0)
+
+        setspeed(RULERSPEED)
+        moverel(coord, -LANEWIDTH, 0, ext=1)
+        semicircle(coord, -LANEWIDTH/2.0, LANEWIDTH, ext=1)
+        moverel(coord, LANEWIDTH, 0, ext=1)
+
+    output("; Start ruler")
+    for i in range(TESTTRY):
+        moverel(coord, 0, LANEWIDTH, ext=1)
+        moverel(coord, TESTLENGTH, 0, ext=1)
+        moverel(coord, 0, -LANEWIDTH, ext=1)
+        moverel(coord, TESTLENGTH, 0, ext=1)
+    moverel(coord, 0, LANEWIDTH, ext=1)
+    moverel(coord, TESTLENGTH, 0, ext=1)
+    moverel(coord, 0, -LANEWIDTH, ext=1)
+    moverel(coord, LANEWIDTH*2, 0, ext=1)
+
     output(ENDG)
 
 if __name__ == '__main__':
