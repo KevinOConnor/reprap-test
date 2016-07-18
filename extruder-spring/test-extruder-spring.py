@@ -15,13 +15,13 @@ import sys, math
 
 # Ratio of e-steps to x/y steps, and extruder Z height.
 FILAMENTWIDTH=1.75
-NOZZLEWIDTH=0.35
+EXTRUDEWIDTH=0.40
 EXTRUDEZ=0.3
-EXTRAZ=0.0
-EXTRUSIONMULT=(EXTRUDEZ * NOZZLEWIDTH) / (math.pi * (FILAMENTWIDTH/2)**2)
+EXTRUSIONMULT=(EXTRUDEZ * EXTRUDEWIDTH) / (math.pi * (FILAMENTWIDTH/2)**2)
 # Size of bed (used to center print after homing printer.
 BEDX=200
 BEDY=250
+EXTRAZ=0.0
 # Speeds, lengths, and counts for each extrusion test.
 TESTSPEEDS=[20., 40., 60., 80., 100., 120.]
 TESTLENGTH=20
