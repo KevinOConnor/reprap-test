@@ -35,9 +35,6 @@ RULERSPEED=10.
 REPOSITIONSPEED=40.
 REPOSITIONZSPEED=10.
 REPOSITIONZ=1.3
-# Time (in ms) to wait before/after an extrusion.
-ENDDWELL=500
-STARTDWELL=500
 
 STARTG="""
 ; This is a calibration print for testing extruder springiness.
@@ -79,14 +76,12 @@ def moverel(coord, x, y, ext=None):
     moveabs(coord, coord.currentX + x, coord.currentY + y, ext)
 
 def reposition(coord, x, y):
-    output("G4 P%d" % (ENDDWELL,))
     setspeed(REPOSITIONZSPEED)
     output("G1 Z%f" % (REPOSITIONZ,))
     setspeed(REPOSITIONSPEED)
     moveabs(coord, x, y)
     setspeed(REPOSITIONZSPEED)
     output("G1 Z%f" % (EXTRUDEZ+EXTRAZ,))
-    output("G4 P%d" % (STARTDWELL,))
 
 def main():
     numlanes = len(TESTSPEEDS)
