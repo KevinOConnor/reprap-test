@@ -11,7 +11,7 @@
 # EXTRUSIONMULT, EXTRUDEZ, BEDX, and BEDY variables.  It is also
 # recommended to inspect the output g-code to validate it makes sense
 # for the printer it will be run on.
-import math
+import sys, math
 
 # Ratio of e-steps to x/y steps, and extruder Z height.
 FILAMENTWIDTH=1.75
@@ -56,16 +56,19 @@ class ToolPos:
     baseX = baseY = 0.
     currentX = currentY = currentE = 0.
 
+def output(msg):
+    sys.stdout.write(msg + "\n")
+
 def setspeed(speed):
-    print "G1 F%f" % (speed*60.,)
+    output("G1 F%f" % (speed*60.,))
 
 def moveabs(coord, x, y, e=None):
     if e is None:
-        print "G1 X%f Y%f" % (coord.baseX + x, coord.baseY + y)
+        output("G1 X%f Y%f" % (coord.baseX + x, coord.baseY + y))
         coord.currentX = x
         coord.currentY = y
     else:
-        print "G1 X%f Y%f E%f" % (coord.baseX + x, coord.baseY + y, e)
+        output("G1 X%f Y%f E%f" % (coord.baseX + x, coord.baseY + y, e))
         coord.currentX = x
         coord.currentY = y
         coord.currentE = e
@@ -76,14 +79,14 @@ def moverel(coord, x, y, ext=None):
     moveabs(coord, coord.currentX + x, coord.currentY + y, ext)
 
 def reposition(coord, x, y):
-    print "G4 P%d" % (ENDDWELL,)
+    output("G4 P%d" % (ENDDWELL,))
     setspeed(REPOSITIONZSPEED)
-    print "G1 Z%f" % (REPOSITIONZ,)
+    output("G1 Z%f" % (REPOSITIONZ,))
     setspeed(REPOSITIONSPEED)
     moveabs(coord, x, y)
     setspeed(REPOSITIONZSPEED)
-    print "G1 Z%f" % (EXTRUDEZ+EXTRAZ,)
-    print "G4 P%d" % (STARTDWELL,)
+    output("G1 Z%f" % (EXTRUDEZ+EXTRAZ,))
+    output("G4 P%d" % (STARTDWELL,))
 
 def main():
     numlanes = len(TESTSPEEDS)
@@ -95,13 +98,13 @@ def main():
     teststartx = totalx/2
     testendx = -teststartx
 
-    print STARTG
-    print "; Prime extruder"
+    output(STARTG)
+    output("; Prime extruder")
     reposition(coord, totalx, totaly)
     setspeed(RULERSPEED)
     moverel(coord, -totalx, 0, ext=1)
 
-    print "; Start ruler"
+    output("; Start ruler")
     rulery = totaly-RULERWIDTH*2
     for i in range(TESTTRY*2):
         reposition(coord, (i+1)*TESTLENGTH, rulery)
@@ -109,7 +112,7 @@ def main():
         moverel(coord, 0, RULERWIDTH, ext=1)
 
     for i in range(numlanes):
-        print "; Start run %d" % (i,)
+        output("; Start run %d" % (i,))
         reposition(coord, totalx, rulery-(i*2+1)*LANEWIDTH)
         setspeed(TESTSPEEDS[i])
         for j in range(TESTTRY):
@@ -123,13 +126,13 @@ def main():
             moverel(coord, TESTLENGTH, 0, ext=1)
         moverel(coord, TESTLENGTH, 0)
 
-    print "; Start ruler"
+    output("; Start ruler")
     rulery = RULERWIDTH
     for i in range(TESTTRY*2):
         reposition(coord, totalx-(i+1)*TESTLENGTH, rulery)
         setspeed(RULERSPEED)
         moverel(coord, 0, -RULERWIDTH, ext=1)
-    print ENDG
+    output(ENDG)
 
 if __name__ == '__main__':
     main()
