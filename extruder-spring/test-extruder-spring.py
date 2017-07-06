@@ -32,7 +32,7 @@ LANEWIDTH=5.
 RULERSPEED=10.
 SEMICIRCLEPOINTS=10
 # Speed and details of non-extrusion head movements
-REPOSITIONSPEED=40.
+REPOSITIONSPEED=130.
 REPOSITIONZSPEED=10.
 REPOSITIONZ=1.0
 
@@ -126,10 +126,12 @@ def main():
 
     for i in range(numlanes):
         output("; Start run %d" % (i,))
-        setspeed(TESTSPEEDS[i])
         for j in range(TESTTRY):
+            setspeed(REPOSITIONSPEED)
             moverel(coord, TESTLENGTH, 0)
+            setspeed(TESTSPEEDS[i])
             moverel(coord, TESTLENGTH, 0, ext=1)
+        setspeed(REPOSITIONSPEED)
         moverel(coord, TESTLENGTH, 0)
 
         setspeed(RULERSPEED)
@@ -137,10 +139,12 @@ def main():
         semicircle(coord, LANEWIDTH/2.0, LANEWIDTH, ext=1)
         moverel(coord, -LANEWIDTH, 0, ext=1)
 
-        setspeed(TESTSPEEDS[i])
         for j in range(TESTTRY):
+            setspeed(REPOSITIONSPEED)
             moverel(coord, -TESTLENGTH, 0)
+            setspeed(TESTSPEEDS[i])
             moverel(coord, -TESTLENGTH, 0, ext=1)
+        setspeed(REPOSITIONSPEED)
         moverel(coord, -TESTLENGTH, 0)
 
         setspeed(RULERSPEED)
